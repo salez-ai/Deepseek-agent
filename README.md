@@ -832,33 +832,6 @@ Your configured generator's own privacy policy and data handling practices also 
 
 ---
 
-## Testing and Verification
-
-The current public repository snapshot does not include the automated test suite or test fixtures used during development.
-
-In particular, there is no `tests/` directory in this repository version. Historical development test counts and mock-based test runs therefore cannot be reproduced from a fresh clone.
-
-### Recommended manual verification
-
-Before using the agent on an important project, test it with a disposable project directory:
-
-1. Install the extension from a fresh download of this repository.
-2. Start the bridge with `--root` pointing to a test project.
-3. Verify that the extension connects and displays the expected project path.
-4. Try reading, creating, editing, and deleting a disposable file.
-5. Test command approval and denial using harmless commands.
-6. Verify that backups are created before overwriting or deleting files.
-7. Test skill installation with one of the included example packages.
-8. Test image generation separately, remembering that it depends on an external generator.
-
-### Compatibility verification
-
-The live `chat.deepseek.com` website and live Perchance image generation have not been verified in the documented test environment.
-
-The extension depends on the structure of the DeepSeek website, so changes to its HTML or behavior may affect compatibility.
-
----
-
 ## Troubleshooting
 
 | Problem | What to try |
