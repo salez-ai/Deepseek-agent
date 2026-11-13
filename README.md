@@ -2,7 +2,7 @@
 
 **Turn DeepSeek Chat into an autonomous coding agent — without a DeepSeek API key.**
 
-DeepSeek Agent is an open-source Chrome/Edge extension with a local Python bridge that allows DeepSeek to work directly with your project files.
+DeepSeek Agent is a Chrome/Edge browser extension paired with a local Python bridge that allows DeepSeek to work directly with your project files.
 
 It can explore your codebase, create and edit files, run commands, execute tests, analyze errors, and iteratively improve your project.
 
@@ -26,9 +26,11 @@ It also supports installable skills, image generation, SVG drawing, session resu
 - [SVG Drawing](#svg-drawing)
 - [Appearance](#appearance)
 - [Security and Privacy](#security-and-privacy)
-- [Testing](#testing)
+- [Testing and Verification](#testing-and-verification)
 - [Troubleshooting](#troubleshooting)
 - [Limitations](#limitations)
+- [Disclaimer](#disclaimer)
+- [License](#license)
 
 ---
 
@@ -89,7 +91,7 @@ The AI decides what to do. Your local bridge performs the operations.
 - Internet access to use DeepSeek Chat.
 - A project directory for the agent to work on.
 
-The documented launch instructions below are for Windows.
+The documented launch instructions below use Windows commands.
 
 ## Installation
 
@@ -114,9 +116,9 @@ The extension should now appear in your browser.
 
 ### 3. Start the Python bridge
 
-On Windows, you can drag your project folder onto `start.bat`.
+Open PowerShell or Command Prompt in the repository's root directory.
 
-Alternatively, open a terminal in the repository and run:
+Run:
 
 ```bash
 python bridge\bridge.py --root "C:\path\to\your\project"
@@ -369,7 +371,7 @@ Skill tools appear as dropdown cards in the chat, similar to built-in tools.
 
 ### Included example skills
 
-The repository includes six example skills:
+The repository includes six prepackaged example skills:
 
 | Skill | Description |
 |---|---|
@@ -380,17 +382,13 @@ The repository includes six example skills:
 | `python-style` | Instructions-only skill. |
 | `canvas-draw` | Drawing toolkit that compiles a mini-language into SVG. |
 
-Sources are available in:
-
-```text
-examples/skills/
-```
-
 Importable packages are available in:
 
 ```text
-examples/packaged/
+skills/examples/packaged/
 ```
+
+The current repository includes the packaged `.dsskill.zip` files, but does not include the editable source directories for these example skills.
 
 ### Creating your own skills
 
@@ -486,6 +484,8 @@ generated-images/
     index.jsonl
 ```
 
+The actual extension is chosen according to the image format detected by the bridge. Supported saved formats are PNG, JPEG, GIF, and WebP.
+
 The index records information such as the prompt, seed, and size.
 
 The image appears in the tool card. **Open** displays it at full size, with an image download option.
@@ -533,15 +533,20 @@ The extension validates messages from the generator using its frame and origin, 
 - GIF
 - WebP
 
-The maximum accepted image size is 14 MB.
+The extension accepts image data URLs up to 14 MiB.
+
+The bridge has separate limits:
+
+- **12 MiB** for image previews.
+- **10 MiB** for saving generated images.
 
 The bridge selects the saved filename, validates the actual file type, and stores the image inside `generated-images/`.
 
-This feature adds the following browser permissions:
+This feature uses the following browser permissions:
 
 - `offscreen`
 - `scripting`
-- Access to `perchance.org`
+- Access to the configured generator origin, including Perchance by default.
 
 ### Generator page compatibility
 
@@ -605,32 +610,13 @@ The empty `style` parameter is intentional: it prevents the generator page's def
 
 When no negative prompt is supplied, the generator page's own default negative prompt is used.
 
-### Testing a modified generator offline
+### Testing a custom generator
 
-The repository includes a mock server:
+The public repository snapshot does not include the offline Perchance mock page or mock server.
 
-```text
-tests/fixtures/perchance_page.html
-tests/perchance_mock_server.py
-```
+To test a custom generator, configure its address in the extension popup and use **Test generator**. The page must implement the messaging interface described above.
 
-Run:
-
-```bash
-python tests/perchance_mock_server.py 8789
-```
-
-Set the generator address to:
-
-```text
-http://127.0.0.1:8789/gen
-```
-
-Then press **Test generator**.
-
-The mock uses the page's actual code and replaces only the Perchance-specific functions that would otherwise require the live website.
-
-**Live compatibility note:** The real `perchance.org` service has not been tested as part of the documented test environment. Its behavior may differ.
+**Live compatibility note:** The real `perchance.org` service has not been verified in the documented test environment. Its behavior may differ.
 
 ---
 
@@ -657,10 +643,10 @@ Supported drawing elements include:
 ### Getting started
 
 1. Open the Skills management page.
-2. Import:
+2. Import the packaged skill:
 
    ```text
-   examples/packaged/canvas-draw-1.0.0.dsskill.zip
+   skills/examples/packaged/canvas-draw-1.0.0.dsskill.zip
    ```
 
 3. Press **Start session**, or **Sync** if a session is already running.
@@ -764,7 +750,7 @@ The font stack uses system fonts such as Inter, Segoe UI, SF, and Roboto because
 
 ## Security and Privacy
 
-Security is an important part of DeepSeek Agent because the model interacts with your local files and can execute commands.
+Security is important because the agent interacts with your local files and can execute commands.
 
 ### Local bridge protection
 
@@ -778,7 +764,7 @@ Security is an important part of DeepSeek Agent because the model interacts with
 
 All paths are resolved and checked against `--root`, including paths involving symbolic links.
 
-The bridge also refuses to use dangerous root directories, system folders, and the entire home directory as its project root.
+The bridge also refuses to use drive roots, system folders, and the entire home directory as its project root.
 
 ### Backups
 
@@ -799,7 +785,7 @@ Add the following to your project's `.gitignore`:
 Backups can be disabled with:
 
 ```bash
-python bridge/bridge.py --root "C:\path\to\your\project" --no-backups
+python bridge\bridge.py --root "C:\path\to\your\project" --no-backups
 ```
 
 ### Command approval
@@ -815,7 +801,7 @@ Available options:
 You can disable command execution completely with:
 
 ```bash
-python bridge/bridge.py --root "C:\path\to\your\project" --no-commands
+python bridge\bridge.py --root "C:\path\to\your\project" --no-commands
 ```
 
 Commands execute with your operating-system user's permissions.
@@ -846,78 +832,30 @@ Your configured generator's own privacy policy and data handling practices also 
 
 ---
 
-## Testing
+## Testing and Verification
 
-DeepSeek Agent includes automated tests for its bridge, parser, browser extension, skills, image generation, and drawing system.
+The current public repository snapshot does not include the automated test suite or test fixtures used during development.
 
-The following test coverage is documented for the project.
+In particular, there is no `tests/` directory in this repository version. Historical development test counts and mock-based test runs therefore cannot be reproduced from a fresh clone.
 
-### Bridge and parser
+### Recommended manual verification
 
-- Tests for every built-in tool.
-- Path traversal and path-escape attempts.
-- Invalid authentication tokens (`401`).
-- Web-page-origin rejection (`403`).
-- Command timeouts that terminate the process tree.
-- Valid and malformed tool blocks.
-- Skill tool calls and multiline bodies.
+Before using the agent on an important project, test it with a disposable project directory:
 
-### Session resumption and alerts
+1. Install the extension from a fresh download of this repository.
+2. Start the bridge with `--root` pointing to a test project.
+3. Verify that the extension connects and displays the expected project path.
+4. Try reading, creating, editing, and deleting a disposable file.
+5. Test command approval and denial using harmless commands.
+6. Verify that backups are created before overwriting or deleting files.
+7. Test skill installation with one of the included example packages.
+8. Test image generation separately, remembering that it depends on an external generator.
 
-43 checks covering:
+### Compatibility verification
 
-- Recognition of previous sessions.
-- Resume instructions and current project files.
-- Prevention of old tool calls being executed again.
-- Preservation of changes made between sessions.
-- Wrong-folder confirmation and cancellation.
-- Individual alert settings and persistence.
+The live `chat.deepseek.com` website and live Perchance image generation have not been verified in the documented test environment.
 
-Additional alert testing includes:
-
-- 32 ringtone checks covering sound generation, clipping, click-free starts, notes, loudness, and volume scaling.
-- 32 real-extension checks covering approvals, reminders, hidden tabs, muting, Continue handling, and notification navigation.
-- Paused-state alerts and **Keep going** behavior.
-
-Actual speaker output and operating-system notification-center behavior were not testable in the headless browser environment.
-
-### Image generation
-
-- 36 bridge checks covering image formats, hostile filenames, symbolic links, size limits, file-type validation, and authentication.
-- 57 browser-extension checks covering the generator settings, approval flow, image saving, previews, failures, timeouts, background-tab fallback, queuing, and invalid or oversized messages.
-
-### Canvas drawing
-
-- 49 unit tests covering parsing, SVG rendering, injection attempts, sanitization, editing by ID, and symbolic-link protection.
-- Pixel checks of a rendered scene in Chromium.
-- 31 real-extension end-to-end checks covering tool approvals, previews, snapshots, viewing, PNG export, and six file-path attack scenarios.
-
-### Skills
-
-- 50 checks for skill installation over HTTP, including hostile archives, path traversal, symbolic links, zip bombs, invalid manifests, timeouts, and trust resets.
-- 25 real-Chromium checks for the skills manager, including an XSS attempt in a skill name.
-- 18 checks for the complete AI loop with skills, including approval policies, multiline bodies, and mid-session synchronization.
-
-### Full agent loop
-
-The complete workflow was tested using:
-
-- The real browser extension code.
-- The real Python bridge.
-- A simulated DeepSeek page.
-
-The automated test covered starting a session, exploring a project, editing a file, approving a command, running tests, and finishing the task.
-
-### Important testing limitations
-
-The automated tests do not establish compatibility with every live service.
-
-Specifically:
-
-- The live `chat.deepseek.com` website has not been tested.
-- Live Perchance image generation has not been tested.
-- The appearance features were tested against simulated DeepSeek page markup in Chromium, not the live website.
-- Actual sound output and operating-system notification behavior were not verified.
+The extension depends on the structure of the DeepSeek website, so changes to its HTML or behavior may affect compatibility.
 
 ---
 
@@ -931,7 +869,7 @@ Specifically:
 | Tool call is rejected | Check the tool syntax and required `=====END=====` marker. |
 | DeepSeek stops mid-reply | Click **Continue** when the extension highlights the button. |
 | Agent appears stuck | Press **Retry** to rerun the tool calls in DeepSeek's last reply. |
-| Skill installation fails | Check the package and validate it using `bridge/skilltool.py`. |
+| Skill installation fails | Check the package and validate the skill using `bridge/skilltool.py`. |
 | Image generation fails | Check the generator address, connection method, and **Test generator** result. |
 | Thinking block does not collapse | Check the selectors in `extension/style.js`. |
 
@@ -991,7 +929,7 @@ Use the browser's Inspect tool to examine the live page and find the appropriate
 ## Limitations
 
 - **Live website compatibility:** DeepSeek Agent depends on the structure of the consumer DeepSeek website. Changes to its markup may break selectors or automation.
-- **Terms of service:** Automating the consumer chat page may conflict with DeepSeek's terms and may encounter rate limits. The DeepSeek API is the supported route for heavy or production use.
+- **Terms of service:** Automating the consumer chat page may conflict with DeepSeek's terms and may encounter rate limits. Review the applicable terms before use. The DeepSeek API is the supported route for heavy or production use.
 - **Continue button:** The extension cannot automatically click DeepSeek's Continue button. You must click it when prompted.
 - **Hidden-tab timers:** Chrome can throttle timers in tabs hidden for extended periods, particularly after more than five minutes. Notifications may therefore be delayed.
 - **Sound restrictions:** Browsers require a user interaction before allowing audio. Pressing **Start session** provides that interaction.
@@ -1002,6 +940,26 @@ Use the browser's Inspect tool to examine the live page and find the appropriate
 - **Model quality:** The agent depends on DeepSeek following the tool-call format. If it starts responding with plain text instead of tool blocks, remind it to use the expected format or start a new session.
 - **Image generation:** The configured image generator is an external service. DeepSeek cannot visually inspect generated images.
 - **SVG drawing:** DeepSeek draws without seeing the rendered result, so complex or photographic illustrations are not its intended use case.
+
+---
+
+## Disclaimer
+
+DeepSeek Agent is an independent third-party project.
+
+It is not affiliated with, sponsored by, or officially endorsed by DeepSeek.
+
+DeepSeek is a trademark of its respective owner.
+
+This project interacts with the DeepSeek consumer website through browser automation. Users are responsible for reviewing and complying with applicable terms and policies.
+
+---
+
+## License
+
+No license file is currently included in this repository.
+
+Until a license is added, do not assume that the code is available for unrestricted reuse, modification, or redistribution. Public availability on GitHub does not by itself grant those permissions.
 
 ---
 
