@@ -5,11 +5,6 @@ DeepSeek chat (chat.deepseek.com) into a coding agent: it can explore a
 project, edit files, run your tests, read the output and keep fixing until
 they pass. No API key needed.
 
-The idea (extension in the chat page + bridge on your PC) follows
-[ZeroScript-Free](https://github.com/sebattfg/ZeroScript-Free), which does
-the same for Roblox Studio. This project is written from scratch for general
-projects and shares no code with it.
-
 ```
 DeepSeek chat page  ->  extension (reads replies, runs the loop)
                            |  via the extension's background worker
