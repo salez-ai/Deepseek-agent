@@ -26,7 +26,6 @@ It also supports installable skills, image generation, SVG drawing, session resu
 - [SVG Drawing](#svg-drawing)
 - [Appearance](#appearance)
 - [Security and Privacy](#security-and-privacy)
-- [Testing and Verification](#testing-and-verification)
 - [Troubleshooting](#troubleshooting)
 - [Limitations](#limitations)
 - [Disclaimer](#disclaimer)
