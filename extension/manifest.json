@@ -1,0 +1,59 @@
+{
+  "manifest_version": 3,
+  "name": "DeepSeek Agent",
+  "version": "0.1.2",
+  "description": "Turns the DeepSeek chat into a coding agent that can read, edit and test a local project through a local bridge.",
+  "permissions": [
+    "storage",
+    "notifications",
+    "offscreen",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*",
+    "https://perchance.org/*",
+    "https://*.perchance.org/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "action": {
+    "default_title": "DeepSeek Agent",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chat.deepseek.com/*"
+      ],
+      "js": [
+        "parser.js",
+        "style.js",
+        "alert.js",
+        "content.js"
+      ],
+      "css": [
+        "theme.css",
+        "content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

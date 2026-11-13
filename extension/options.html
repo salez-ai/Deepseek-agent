@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DeepSeek Agent - Skills</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <header class="top">
+      <div>
+        <h1>Skills</h1>
+        <p class="sub">Add instructions and tools for the AI. A skill is a small package: a <code>skill.json</code> manifest, optional instructions, and optional tool programs.</p>
+      </div>
+      <div id="conn" class="conn" role="status" aria-live="polite">Checking bridge...</div>
+    </header>
+
+    <section aria-labelledby="h-import">
+      <h2 id="h-import">Import a skill</h2>
+      <div id="drop" class="drop" tabindex="0">
+        <p class="drop-title">Drop a <strong>.zip</strong> or a skill <strong>folder</strong> here</p>
+        <p class="drop-sub">or</p>
+        <div class="row center">
+          <button id="pick-zip" class="btn primary" type="button">Choose .zip file</button>
+          <button id="pick-dir" class="btn" type="button">Choose folder</button>
+        </div>
+        <input id="in-zip" type="file" accept=".zip,.dsskill" hidden>
+        <input id="in-dir" type="file" webkitdirectory hidden>
+      </div>
+      <div id="msg" class="msg" role="status" aria-live="polite" hidden></div>
+
+      <div id="review" class="review" hidden>
+        <div class="review-head">
+          <div>
+            <h3 id="r-title"></h3>
+            <p id="r-meta" class="muted"></p>
+          </div>
+          <span id="r-replace" class="badge warn" hidden></span>
+        </div>
+        <p id="r-desc"></p>
+        <div class="callout">
+          <strong>Review before installing.</strong> Tools are programs that run on this computer with your permissions. Only install skills from people you trust. Skill tools ask for your approval before they run unless you mark the skill as trusted.
+        </div>
+        <ul id="r-warnings" class="warnings"></ul>
+        <h4>Tools <span id="r-toolcount" class="muted"></span></h4>
+        <div id="r-tools"></div>
+        <details class="fold"><summary>Instructions sent to the AI (<span id="r-ichars"></span> characters)</summary><pre id="r-instr" class="code"></pre></details>
+        <details class="fold"><summary>Files in the package (<span id="r-filecount"></span>)</summary><pre id="r-files" class="code"></pre></details>
+        <div class="row end">
+          <label class="check"><input id="r-enable" type="checkbox" checked> Enable after installing</label>
+          <button id="r-cancel" class="btn" type="button">Cancel</button>
+          <button id="r-install" class="btn primary" type="button">Install</button>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-list">
+      <h2 id="h-list">Installed skills</h2>
+      <p id="empty" class="muted" hidden>No skills installed yet.</p>
+      <div id="list"></div>
+    </section>
+  </main>
+  <script src="options.js"></script>
+</body>
+</html>

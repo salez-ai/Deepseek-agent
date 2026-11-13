@@ -1,0 +1,207 @@
+/* ======================================================================
+   Always on: hiding originals and the collapsible cards.
+   Borders and fills are mixed from currentColor, so they follow
+   whatever light/dark theme DeepSeek is using.
+   ====================================================================== */
+[data-dsa-orig],
+[data-dsa-collapsed] { display: none !important; }
+
+:root {
+  --dsa-font: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", sans-serif;
+  --dsa-mono: "JetBrains Mono", "Cascadia Code", "SF Mono", Consolas, "Liberation Mono", monospace;
+  --dsa-accent: #4c7cf0;
+  --dsa-ok: #2f9e6e;
+  --dsa-err: #d4524a;
+  --dsa-line: color-mix(in srgb, currentColor 16%, transparent);
+  --dsa-fill: color-mix(in srgb, currentColor 5%, transparent);
+}
+
+.dsa-tool {
+  margin: 10px 0;
+  max-width: 100%;
+  border: 1px solid var(--dsa-line);
+  border-left: 3px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-radius: 10px;
+  background: var(--dsa-fill);
+  color: inherit;
+  font: 13px/1.5 var(--dsa-font);
+  overflow: hidden;
+}
+.dsa-tool[data-state="ok"] { border-left-color: var(--dsa-ok); }
+.dsa-tool[data-state="err"] { border-left-color: var(--dsa-err); }
+.dsa-tool[data-state="running"] { border-left-color: var(--dsa-accent); }
+
+.dsa-tsum {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+.dsa-tsum::-webkit-details-marker { display: none; }
+.dsa-tsum:hover { background: color-mix(in srgb, currentColor 4%, transparent); }
+.dsa-tsum:focus-visible { outline: 2px solid var(--dsa-accent); outline-offset: -2px; }
+
+.dsa-chev {
+  flex: none;
+  width: 6px; height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  opacity: 0.55;
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+}
+.dsa-tool[open] > .dsa-tsum > .dsa-chev { transform: rotate(45deg); }
+
+.dsa-tname { flex: none; font: 600 12.5px var(--dsa-mono); }
+.dsa-targ {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.62;
+  font: 12px var(--dsa-mono);
+}
+
+.dsa-chip {
+  flex: none;
+  padding: 1px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--dsa-line);
+  font: 600 11px var(--dsa-font);
+  letter-spacing: 0.02em;
+}
+.dsa-tool[data-state="ok"] .dsa-chip { color: var(--dsa-ok); border-color: color-mix(in srgb, var(--dsa-ok) 45%, transparent); background: color-mix(in srgb, var(--dsa-ok) 12%, transparent); }
+.dsa-tool[data-state="err"] .dsa-chip { color: var(--dsa-err); border-color: color-mix(in srgb, var(--dsa-err) 45%, transparent); background: color-mix(in srgb, var(--dsa-err) 12%, transparent); }
+.dsa-tool[data-state="running"] .dsa-chip { color: var(--dsa-accent); border-color: color-mix(in srgb, var(--dsa-accent) 45%, transparent); background: color-mix(in srgb, var(--dsa-accent) 12%, transparent); animation: dsa-breathe 1.2s ease-in-out infinite; }
+@keyframes dsa-breathe { 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) {
+  .dsa-tool[data-state="running"] .dsa-chip { animation: none; }
+  .dsa-chev { transition: none; }
+}
+
+.dsa-tool[open] > .dsa-tsum { border-bottom: 1px solid var(--dsa-line); }
+.dsa-tbody { padding: 4px 12px 12px; }
+.dsa-sec {
+  margin: 10px 0 4px;
+  font: 600 11px var(--dsa-font);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.dsa-code {
+  max-height: 320px;
+  overflow: auto;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  font: 12.5px/1.55 var(--dsa-mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.dsa-think-toggle {
+  display: inline-flex;
+  align-items: center;
+  margin: 4px 0 8px;
+  padding: 3px 12px;
+  border: 1px solid var(--dsa-line);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  opacity: 0.75;
+  font: 500 12px var(--dsa-font);
+  cursor: pointer;
+}
+.dsa-think-toggle:hover { opacity: 1; background: var(--dsa-fill); }
+.dsa-think-toggle:focus-visible { outline: 2px solid var(--dsa-accent); outline-offset: 2px; }
+
+.dsa-previews { display: flex; flex-wrap: wrap; gap: 12px; margin: 10px 0 4px; }
+.dsa-fig { margin: 0; max-width: 100%; }
+.dsa-img {
+  display: block;
+  max-width: 100%;
+  max-height: 380px;
+  border: 1px solid var(--dsa-line);
+  border-radius: 8px;
+  background-color: #fff;
+  background-image: conic-gradient(#0000000f 25%, transparent 0 50%, #0000000f 0 75%, transparent 0);
+  background-size: 16px 16px;
+}
+.dsa-figcap { display: flex; gap: 10px; align-items: center; margin-top: 6px; font: 12px var(--dsa-mono); opacity: 0.75; }
+.dsa-figname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dsa-open {
+  flex: none; padding: 2px 12px; border: 1px solid var(--dsa-line); border-radius: 999px;
+  background: transparent; color: inherit; font: 500 12px var(--dsa-font); cursor: pointer;
+}
+.dsa-open:hover { background: var(--dsa-fill); border-color: var(--dsa-accent); }
+.dsa-open:focus-visible { outline: 2px solid var(--dsa-accent); outline-offset: 2px; }
+.dsa-note { margin: 4px 0; font: 12.5px var(--dsa-font); opacity: 0.75; }
+
+/* ======================================================================
+   Optional theme (popup: "Cleaner fonts and code blocks")
+   ====================================================================== */
+html.dsa-theme :is(body, div, p, span, li, ul, ol, a, button, textarea, input, label,
+                   h1, h2, h3, h4, h5, h6, td, th, blockquote, summary):not(.katex, .katex *) {
+  font-family: var(--dsa-font) !important;
+}
+html.dsa-theme { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+html.dsa-theme .ds-markdown {
+  font-size: 15px;
+  line-height: 1.75;
+  letter-spacing: -0.003em;
+}
+html.dsa-theme .ds-markdown p { margin: 0.7em 0; }
+html.dsa-theme .ds-markdown h1,
+html.dsa-theme .ds-markdown h2,
+html.dsa-theme .ds-markdown h3,
+html.dsa-theme .ds-markdown h4 {
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: -0.012em;
+  margin: 1.5em 0 0.5em;
+}
+html.dsa-theme .ds-markdown h1 { font-size: 1.55em; }
+html.dsa-theme .ds-markdown h2 { font-size: 1.28em; }
+html.dsa-theme .ds-markdown h3 { font-size: 1.1em; }
+html.dsa-theme .ds-markdown ul,
+html.dsa-theme .ds-markdown ol { padding-left: 1.5em; }
+html.dsa-theme .ds-markdown li { margin: 0.3em 0; }
+html.dsa-theme .ds-markdown a { color: var(--dsa-accent); text-underline-offset: 3px; }
+html.dsa-theme .ds-markdown blockquote {
+  margin: 1em 0;
+  padding: 0.1em 0 0.1em 1em;
+  border-left: 3px solid color-mix(in srgb, var(--dsa-accent) 55%, transparent);
+  opacity: 0.9;
+}
+html.dsa-theme .ds-markdown hr { border: 0; border-top: 1px solid var(--dsa-line); margin: 1.5em 0; }
+
+html.dsa-theme .ds-markdown table { border-collapse: collapse; font-size: 0.93em; }
+html.dsa-theme .ds-markdown th,
+html.dsa-theme .ds-markdown td { border: 1px solid var(--dsa-line); padding: 7px 12px; }
+html.dsa-theme .ds-markdown th { background: var(--dsa-fill); font-weight: 600; }
+
+html.dsa-theme .ds-markdown code,
+html.dsa-theme .ds-markdown pre,
+html.dsa-theme .ds-markdown pre * { font-family: var(--dsa-mono) !important; }
+html.dsa-theme .ds-markdown :not(pre) > code {
+  padding: 0.14em 0.42em;
+  border-radius: 5px;
+  background: color-mix(in srgb, currentColor 9%, transparent);
+  font-size: 0.88em;
+}
+html.dsa-theme .ds-markdown pre {
+  font-size: 13px;
+  line-height: 1.6;
+  border: 1px solid var(--dsa-line);
+  border-radius: 10px;
+}
+
+html.dsa-theme textarea:focus-visible { outline: 2px solid color-mix(in srgb, var(--dsa-accent) 70%, transparent); outline-offset: 1px; }
+html.dsa-theme ::selection { background: color-mix(in srgb, var(--dsa-accent) 32%, transparent); }
+html.dsa-theme * { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, currentColor 28%, transparent) transparent; }

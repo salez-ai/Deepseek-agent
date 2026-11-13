@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>DeepSeek Agent</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff; --fg: #1c2330; --muted: #5d6879; --line: #d5dae3;
+      --accent: #2b59d9; --accent-fg: #fff; --ok: #1d9a5b; --err: #d23b3b;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #1b2029; --fg: #e6e9ef; --muted: #9aa5b8; --line: #333b49;
+              --accent: #6f93ff; --accent-fg: #0f1523; --ok: #4cc58a; --err: #ff7373; }
+    }
+    * { box-sizing: border-box; }
+    body { width: 340px; margin: 0; padding: 14px; background: var(--bg); color: var(--fg);
+           font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    h1 { font-size: 15px; margin: 0 0 10px; }
+    label { display: block; margin: 10px 0 3px; color: var(--muted); }
+    input { width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px;
+            background: transparent; color: var(--fg); font: 12px ui-monospace, Consolas, monospace; }
+    input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    button { margin-top: 12px; padding: 6px 12px; border: 0; border-radius: 6px;
+             background: var(--accent); color: var(--accent-fg); font: inherit; cursor: pointer; }
+    button.secondary { margin-top: 8px; width: 100%; background: transparent; color: var(--fg); border: 1px solid var(--line); }
+    #msg { margin-top: 10px; min-height: 1.4em; word-break: break-word; }
+    .ok { color: var(--ok); } .err { color: var(--err); }
+    fieldset { margin: 14px 0 0; padding: 10px 12px 6px; border: 1px solid var(--line); border-radius: 8px; }
+    legend { padding: 0 6px; color: var(--muted); }
+    .opt { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; color: var(--fg); cursor: pointer; }
+    .opt input { width: auto; margin: 0; accent-color: var(--accent); }
+    .events { margin: 8px 0 10px; padding: 8px 10px 2px; border: 1px solid var(--line); border-radius: 8px; }
+    .events .muted { display: block; margin-bottom: 6px; color: var(--muted); }
+    .field { display: grid; grid-template-columns: 110px 1fr; align-items: center; gap: 8px; margin: 0 0 8px; }
+    .field label { margin: 0; }
+    .field select, .field input[type=range] { width: 100%; }
+    .field select { padding: 5px 6px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--fg); }
+    .row { display: flex; gap: 8px; margin-bottom: 4px; }
+    button.small { margin-top: 4px; flex: 1; width: auto; padding: 5px 8px; }
+    .gen-msg { min-height: 1.3em; margin: 4px 0; word-break: break-word; font-size: 12.5px; }
+    #genThumb { display: block; max-width: 100%; max-height: 160px; margin: 6px 0; border-radius: 6px; border: 1px solid var(--line); }
+    p.hint { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
+    code { font-family: ui-monospace, Consolas, monospace; }
+  </style>
+</head>
+<body>
+  <h1>DeepSeek Agent</h1>
+  <label for="url">Bridge address</label>
+  <input id="url" type="text" spellcheck="false" autocomplete="off">
+  <label for="token">Token (printed by bridge.py)</label>
+  <input id="token" type="password" spellcheck="false" autocomplete="off">
+  <button id="save">Save and test</button>
+  <button id="open-deepseek">Open deepseek</button>
+  <div id="msg" role="status"></div>
+  <button id="skills" class="secondary" type="button">Manage skills...</button>
+  <fieldset>
+    <legend>Alerts</legend>
+    <label class="opt"><input type="checkbox" id="alertSound"> Ring when the agent needs me</label>
+    <label class="opt"><input type="checkbox" id="alertNotify"> Show a desktop notification</label>
+    <div class="events" role="group" aria-labelledby="events-label">
+      <span id="events-label" class="muted">Alert me when:</span>
+      <label class="opt"><input type="checkbox" id="alertOnApproval"> Approval is needed</label>
+      <label class="opt"><input type="checkbox" id="alertOnContinue"> Continue is needed (DeepSeek stopped mid-reply)</label>
+      <label class="opt"><input type="checkbox" id="alertOnPaused"> The agent paused (after 40 steps)</label>
+      <label class="opt"><input type="checkbox" id="alertOnError"> An error stops the agent</label>
+      <label class="opt"><input type="checkbox" id="alertOnDone"> The agent finished (only when I am away)</label>
+    </div>
+    <div class="field"><label for="alertTone">Ringtone</label>
+      <select id="alertTone"><option value="chime">Chime</option><option value="bell">Bell</option><option value="digital">Digital</option></select></div>
+    <div class="field"><label for="alertVolume">Volume</label><input type="range" id="alertVolume" min="5" max="100" step="5"></div>
+    <div class="field"><label for="alertRepeatSec">Remind me again</label>
+      <select id="alertRepeatSec"><option value="0">Never</option><option value="30">after 30 s</option><option value="60">after 1 min</option><option value="120">after 2 min</option></select></div>
+    <div class="row"><button id="testSound" class="secondary small" type="button">Test sound</button>
+      <button id="testNotify" class="secondary small" type="button">Test notification</button></div>
+    <p class="hint">Ticked events ring. Desktop notifications also appear, but only while you are in another tab or window. "Finished" alerts only fire while you are away.</p>
+  </fieldset>
+  <fieldset>
+    <legend>Image generation</legend>
+    <label class="opt"><input type="checkbox" id="imageGen"> Let the agent generate pictures</label>
+    <div class="field"><label for="imageGenUrl">Generator</label><input id="imageGenUrl" type="url" spellcheck="false" autocomplete="off"></div>
+    <div class="field"><label for="imageGenMode">Method</label>
+      <select id="imageGenMode"><option value="auto">Automatic</option><option value="frame">Hidden frame</option><option value="tab">Background tab</option></select></div>
+    <div class="field"><label for="imageGenTimeoutSec">Wait up to</label>
+      <select id="imageGenTimeoutSec"><option value="60">1 minute</option><option value="120">2 minutes</option><option value="180">3 minutes</option><option value="300">5 minutes</option></select></div>
+    <div class="row"><button id="testGen" class="secondary small" type="button">Test generator</button></div>
+    <div id="genMsg" role="status" class="gen-msg"></div>
+    <img id="genThumb" alt="Test picture" hidden>
+    <p class="hint">The agent's picture prompts are sent to this site. Every <code>generate_image</code> call asks your approval first.</p>
+  </fieldset>
+  <fieldset>
+    <legend>Appearance</legend>
+    <label class="opt"><input type="checkbox" id="collapseThinking"> Collapse the thinking block</label>
+    <label class="opt"><input type="checkbox" id="collapseTools"> Show tool calls as dropdowns</label>
+    <label class="opt"><input type="checkbox" id="collapseAgentMsgs"> Fold agent messages (results, instructions)</label>
+    <label class="opt"><input type="checkbox" id="theme"> Cleaner fonts, code blocks and tables</label>
+  </fieldset>
+  <p class="hint">Start the bridge with <code>python bridge.py --root &lt;project&gt;</code>, then open chat.deepseek.com.</p>
+  <script src="alert.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

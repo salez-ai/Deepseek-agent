@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Image</title>
+  <link rel="stylesheet" href="viewer.css">
+</head>
+<body>
+  <header>
+    <div class="title"><strong id="name">Loading...</strong><span id="info" class="muted"></span></div>
+    <div class="actions">
+      <label class="muted" for="scale" id="scale-label">PNG size</label>
+      <select id="scale" aria-labelledby="scale-label">
+        <option value="1">1x</option><option value="2" selected>2x</option><option value="3">3x</option><option value="4">4x</option>
+      </select>
+      <button id="png" class="btn primary" type="button" disabled>Download PNG</button>
+      <button id="orig" class="btn" type="button" disabled>Download original</button>
+      <button id="fit" class="btn" type="button" disabled>Actual size</button>
+    </div>
+  </header>
+  <main id="stage" role="img" aria-label="Preview"><p id="msg" class="muted" role="status">Loading image...</p></main>
+  <script src="viewer.js"></script>
+</body>
+</html>
