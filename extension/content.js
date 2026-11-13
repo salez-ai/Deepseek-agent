@@ -16,7 +16,7 @@
   const CFG = {
     stableMs: 2500,       // reply must stop changing this long before we act on it
     pollMs: 600,
-    maxSteps: 1000000,         // automatic turns before pausing for the user
+    maxSteps: 40,         // automatic turns before pausing for the user
     maxToolsPerTurn: 6,
     maxResultChars: 30000,
   };
