@@ -5,6 +5,11 @@ DeepSeek chat (chat.deepseek.com) into a coding agent: it can explore a
 project, edit files, run your tests, read the output and keep fixing until
 they pass. No API key needed.
 
+The idea (extension in the chat page + bridge on your PC) follows
+[ZeroScript-Free](https://github.com/sebattfg/ZeroScript-Free), which does
+the same for Roblox Studio. This project is written from scratch for general
+projects and shares no code with it.
+
 ```
 DeepSeek chat page  ->  extension (reads replies, runs the loop)
                            |  via the extension's background worker
@@ -78,7 +83,33 @@ it waits until the reply has grown and settled.
 
 The extension runs the blocks, then sends the results back as a new message,
 and repeats until DeepSeek answers without a tool block. After 40 automatic
-steps it pauses and shows **Resume**. Typing your own message resets the count.
+steps it pauses and shows **Keep going**. Typing your own message resets the count.
+
+## Continuing an earlier chat: Resume session
+
+Say the agent built a game a few days ago and you want to improve it. Open that DeepSeek chat, make
+sure the bridge is running for the same project folder, and press **Resume session** (not Start).
+
+What it does:
+
+1. **Recognises the chat.** If the chat holds an earlier agent session, the panel says so (with the
+   project folder and how long ago) and highlights **Resume session**. New chats highlight
+   **Start session** instead.
+2. **Never re-runs old work.** Tool calls already in the chat are history. They are not executed
+   again and their cards read **Earlier**. This matters: re-running an old "write file" would wipe
+   out the edits you made since.
+3. **Refreshes the agent.** It sends one message with the current rules, your enabled skills and the
+   **files that exist now**, and tells the agent that anything it remembers from earlier may be out of
+   date and must be read again before editing. The agent answers "Ready to continue."
+4. **Protects the wrong-folder case.** If the bridge now points at a different project than the one
+   the chat worked on, the panel names both folders and asks before continuing, and the agent is
+   told the folder changed. Press Cancel to stop and restart the bridge with the right `--root`.
+
+Then just say what you want: *"Add a score display and a pause menu to the game."*
+
+Which chats are remembered is stored in your browser (the chat address, the project folder and the
+time); nothing is sent anywhere. **Start session** also works in an old chat, but it treats the chat
+as new and does not show the agent the current files.
 
 ## Alerts: it tells you when it needs you
 
@@ -89,7 +120,7 @@ you whenever it is blocked on you:
 | --- | --- | --- | --- |
 | A command or skill tool needs your **Allow** | yes | when you are away from the tab | up to 3 times |
 | DeepSeek stopped mid-reply: **click Continue** (the button is outlined in orange) | yes | when you are away | up to 3 times |
-| The agent **paused** after 40 automatic steps (press **Resume**) | yes | when you are away | up to 3 times |
+| The agent **paused** after 40 automatic steps (press **Keep going**) | yes | when you are away | up to 3 times |
 | The agent stopped because of an **error** | yes | when you are away | up to 3 times |
 | The agent **finished** and waits for your next message | softer, only when you are away | only when you are away | no |
 
@@ -99,8 +130,10 @@ tab. The tab title also shows a bell while something is waiting. Everything clea
 as you act.
 
 Settings are in the extension popup, section **Alerts**: sound on/off, desktop notification
-on/off, ringtone (Chime, Bell, Digital), volume, and how soon to remind you again (never, 30 s,
-1 min, 2 min), with Test buttons. The bell in the panel header mutes the sound quickly.
+on/off, **a checkbox for each event** (approval needed, Continue needed, paused, errors, finished),
+ringtone (Chime, Bell, Digital), volume, and how soon to remind you again (never, 30 s, 1 min,
+2 min), with Test buttons. An event you untick makes no sound, no notification and no title mark
+(the highlight and the status line still show). The bell in the panel header mutes the sound quickly.
 The ringtones are generated in the browser, so there is no audio file to install.
 
 ## Skills (add instructions and tools)
@@ -136,6 +169,66 @@ Included examples (`examples/skills/` has the sources, `examples/packaged/` the 
 | `git-readonly` | A tool with no code at all, wrapping `git` |
 | `python-style` | Instructions only |
 | `canvas-draw` | Drawing toolkit: a mini-language compiled to SVG, previews in the chat |
+
+## Real image generation (your Perchance generator)
+
+DeepSeek cannot make pictures itself, so the extension connects it to an **image generator web page**
+(by default <https://perchance.org/5jsm6cis4r>). The agent gets one more tool, `generate_image`:
+
+```
+name: generate_image
+prompt: a cozy fox in a snowy forest, golden light
+size: portrait            (square | landscape | portrait | large; default square)
+negative: blurry, text    (optional)
+seed: 777                 (optional)
+filename: fox hero        (optional; used to name the saved file)
+```
+
+1. The agent writes that call. You are asked to **Allow** it (the prompt, size, negative prompt and seed
+   are shown). The prompt text is sent to the generator site, so only allow what you are happy to send.
+2. The extension asks the generator page for the picture, then saves it in your project:
+   `generated-images/<name>-<id>.jpg`, plus a line in `generated-images/index.jsonl` (prompt, seed, size).
+3. The picture appears in the tool's card in the chat. **Open** shows it full size, with PNG download.
+   The agent itself cannot see the picture; it is told so, and is given the saved path to use in code.
+
+**How it reaches the page.** The generator needs a real browser, and the extension *is* your browser:
+
+| Method | What happens | Notes |
+| --- | --- | --- |
+| Hidden frame | The page is loaded in a hidden frame and driven with `postMessage` | Silent and fast; reused between pictures |
+| Background tab | A tab opens with the page's direct link, the extension reads the finished picture and closes the tab | A normal browser visit: use it if the page needs browser verification or refuses to be framed |
+| Automatic (default) | Hidden frame first; if the page cannot be reached, a background tab | |
+
+Settings are in the extension popup, section **Image generation**: on/off, the generator address
+(https, or http on your own computer), the method, how long to wait, and a **Test generator**
+button that shows the picture it got. If you turn it off or on during a session, press **Sync**.
+
+**Privacy and safety.** Pictures and prompts go only to the address you configured. Each call needs your approval.
+Messages from the generator page are accepted only from its own frame and origin, and only if the picture
+is a real png/jpg/gif/webp data URL of at most 14 MB. The bridge stores it under a name it chooses itself,
+inside `generated-images/`, after checking the file's real type.
+This feature adds the permissions *offscreen* (the hidden frame), *scripting* (to read the finished picture
+from the background tab) and access to perchance.org.
+
+**If you edit the generator page.** The extension depends on these parts of it:
+
+- On load it posts `{action: 'ready'}` to its parent, and answers `{action: 'ping'}` with `{action: 'ready'}`.
+- `{action: 'generate', prompt, resolution, negativePrompt?, seed?}` -> `{action: 'result', dataUrl, seed, resolution}`
+  or `{action: 'error', message}`. `resolution` is one of `512x512 | 768x512 | 512x768 | 768x768`.
+- For the background tab it opens `<address>?prompt=...&resolution=...&negative=...&seed=...&style=&autogen=1&embed=1`
+  and reads `#resultImg` (`src` = the data URL, not `hidden`), `#metaEl` (`seed: N`) and `#statusEl`
+  (text containing "failed" or "error" means failure). It passes an **empty `style=`** on purpose: your page
+  otherwise adds its Style dropdown (default "Photo") to every prompt.
+- If the prompt has no negative prompt, the page's own default negative prompt applies.
+
+To check a changed page without internet access: put it in `tests/fixtures/perchance_page.html`, run
+`python tests/perchance_mock_server.py 8789`, set the generator address to `http://127.0.0.1:8789/gen`
+and press **Test generator**. The mock serves your page's real code and only replaces the parts that exist
+on perchance.org itself (`generateImage`, `randomIdea`, `generatorName`).
+
+**Not tested:** the live perchance.org (this was built without internet access to it). If the real page
+behaves differently, the popup's **Test generator** button shows the exact error, and the method setting
+lets you switch between the hidden frame and a background tab.
 
 ## Drawing images (the `canvas-draw` skill)
 
@@ -202,12 +295,23 @@ Tested here:
 - Bridge: every tool, path-escape attempts, wrong token (401), web-page origin
   (403), timeouts that kill the whole process tree.
 - Parser: valid and malformed blocks, including skill tools and bodies.
+- Resume session and per-event alerts: 43 checks with the real extension (an old chat is recognised;
+  the resume message carries the rules, skills and current files; old tool calls never re-run and read
+  "Earlier"; the person's edits survive; the agent edits the current file; the wrong-folder question
+  names both folders and Cancel sends nothing; a new chat is remembered once it has an address; each
+  event's switch silences exactly that event and cancels a pending one; the popup saves them).
 - Alerts: ringtones rendered offline and measured (32 checks: audible, no clipping, click-free
   starts, the right notes, equal loudness across tones, volume scaling); a real-extension run (32
   checks: popup settings, approval alert, reminders, "away" handling, mute, the Continue flow,
-  clearing, clicking a notification to return to the tab); the paused alert and Resume.
+  clearing, clicking a notification to return to the tab); the paused alert and Keep going.
   **Not testable here:** the actual sound coming out of speakers, and how your operating system
   shows the notification (the headless test browser has no notification centre).
+- Image generation: 36 bridge checks (real png/jpg/webp/gif, hostile names, a symlinked folder, size
+  and type limits, auth) and 57 real-extension checks against **the generator page's actual code**
+  with only Perchance's own functions stubbed: popup settings and address validation, the full agent flow
+  (approval, prompt/size/negative/seed passed exactly, saved JPEG, preview in the chat), validation before
+  any approval prompt, on/off with Sync, a failing generator, a hang, a page that forbids framing (falls
+  back to a tab), a broken page, two pictures queued, and forged or oversized messages.
 - canvas-draw: 49 unit tests (`python -m unittest tests/test_canvas_draw.py`: parser, rendering,
   injection attempts, sanitiser, edit-by-id, symlinks), pixel checks of a rendered scene in
   Chromium, and a **real-extension end-to-end run** (the actual extension, bridge and skill loaded
