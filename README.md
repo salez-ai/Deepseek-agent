@@ -957,9 +957,15 @@ This project interacts with the DeepSeek consumer website through browser automa
 
 ## License
 
-No license file is currently included in this repository.
+DeepSeek Agent is licensed under the MIT License.
 
-Until a license is added, do not assume that the code is available for unrestricted reuse, modification, or redistribution. Public availability on GitHub does not by itself grant those permissions.
+You are free to use, modify, distribute, and commercially use this software,
+subject to the conditions of the license.
+
+See [LICENSE](LICENSE) for the complete license text.
+
+Third-party components, dependencies, and external services remain subject
+to their respective licenses and terms.
 
 ---
 
